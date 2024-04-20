@@ -9,7 +9,7 @@ FPS = 30         # 游戏帧率
 # Setup 设置
 pygame.init()
 SCREEN = pygame.display.set_mode((W, H))
-pygame.display.set_caption('Flappy bird——code by Muhao')  # 标题栏命名
+pygame.display.set_caption('Flappy bird——code by Muhao') # 标题栏命名
 CLOCK = pygame.time.Clock()
 
 # Materials 素材
@@ -88,6 +88,9 @@ def menu_window():
 
 
 def game_window():
+
+    score = 0
+
     AUDIO['flap'].play()
     floor_gap = IMAGES['floor'].get_width() - W
     floor_x = 0
@@ -123,10 +126,10 @@ def game_window():
 
         bird.update(flap)
         # 如果小鸟飞出屏幕或者飞到地板，触发撞击和死亡音效
-        if bird.rect.y > FLOOR_Y or bird.rect.y< 0:
+        if bird.rect.y > FLOOR_Y or bird.rect.y< 0 or pygame.sprite.spritecollideany(bird, pipe_group):
             AUDIO['hit'].play()
             AUDIO['die'].play()
-            result = {'bird': bird, 'pipe_group': pipe_group}
+            result = {'bird': bird, 'pipe_group': pipe_group, 'score': score}
             return result
 
         first_pipe_up = pipe_group.sprites()[0]
@@ -142,18 +145,16 @@ def game_window():
 
         pipe_group.update()
 
-        for pipe in pipe_group.sprites():
-            right_to_laft = max(bird.rect.right, pipe.rect.right) - min(bird.rect.left, pipe.rect.left)
-            bottom_to_top = max(bird.rect.bottom, pipe.rect.bottom) - min(bird.rect.top, pipe.rect.top)
-            if right_to_laft < bird.rect.width + pipe.rect.width and bottom_to_top < bird.rect.height + pipe.rect.height:
-                AUDIO['hit'].play()
-                AUDIO['die'].play()
-                result = {'bird': bird, 'pipe_group':pipe_group}
-                return result
+        if bird.rect.left + first_pipe_up.x_vel < first_pipe_up.rect.centerx < bird.rect.left:
+            score += 1
+            AUDIO['score'].play()
 
         SCREEN.blit(IMAGES['bgpic'], (0, 0))
         pipe_group.draw(SCREEN)
         SCREEN.blit(IMAGES['floor'], (floor_x, FLOOR_Y))
+
+        show_score(score)
+
         SCREEN.blit(bird.imge,bird.rect)
         pygame.display.update()
         CLOCK.tick(FPS)
@@ -179,11 +180,20 @@ def end_window(result):
         pipe_group.draw(SCREEN)
         SCREEN.blit(IMAGES['floor'], (0, FLOOR_Y))
         SCREEN.blit(IMAGES['gameover'], (gameover_x, gameover_y))
+        show_score(result['score'])
         SCREEN.blit(bird.imge, bird.rect)
         pygame.display.update()
         CLOCK.tick(FPS)
 
-
+def show_score(score):
+    score_str = str(score)
+    n = len(score_str)
+    w = IMAGES['0'].get_width() * 1.1
+    x = (W - n * w)/2
+    y = H * 0.1
+    for number in score_str:
+        SCREEN.blit(IMAGES[number], (x,y))
+        x += w
 class Bird:
     def __init__(self, x, y):
         self.frames = [0] * 5 + [1] * 5 + [2] * 5 + [1] * 5
