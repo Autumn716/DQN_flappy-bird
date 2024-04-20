@@ -14,7 +14,6 @@ pygame.display.set_caption('Flappy bird——code by Muhao')  # 标题栏命名
 CLOCK = pygame.time.Clock()
 
 # Materials 素材
-
 IMAGES = {}
 for image in os.listdir('assets/sprites'):
     name, extension = os.path.splitext(image)
